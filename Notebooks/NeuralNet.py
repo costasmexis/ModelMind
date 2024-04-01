@@ -3,6 +3,10 @@ import torch.nn as nn
 import numpy as np
 import pandas as pd
 
+DEVIDE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+torch.manual_seed(42)
+
 def preprocess_data(train_df: pd.DataFrame):
     X = torch.tensor(train_df.drop(columns=['mu_max', 'Km', 'Y_XS']).values, dtype=torch.float32)
     y = torch.tensor(train_df[['mu_max', 'Km', 'Y_XS']].values, dtype=torch.float32)
