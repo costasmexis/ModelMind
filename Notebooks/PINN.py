@@ -3,8 +3,6 @@ import torch
 import torch.nn as nn
 import seaborn as sns
 
-T_START = 0
-T_END = 4.08333
 N_SAMPLES = 100 
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -12,7 +10,7 @@ DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 torch.manual_seed(42)
 
 class PINN(nn.Module):
-    def __init__(self, input_dim, output_dim):
+    def __init__(self, input_dim, output_dim, T_START=0, T_END=10):
         super(PINN, self).__init__()
         self.input = nn.Linear(input_dim, 32)
         # nn.init.normal_(self.input.weight)
@@ -22,8 +20,11 @@ class PINN(nn.Module):
         # nn.init.normal_(self.output.weight)
         
         self.mu_max = nn.Parameter(torch.tensor([0.5]))
-        self.Km = nn.Parameter(torch.tensor([0.5]))
+        self.Km = nn.Parameter(torch.tensor([0.01]))
         self.Y_XS = nn.Parameter(torch.tensor([0.5]))
+        
+        self.t_start = T_START
+        self.t_end = T_END
     
     def forward(self, x):
         x = torch.tanh(self.input(x)) 
@@ -33,7 +34,7 @@ class PINN(nn.Module):
         return x    
     
 def get_loss(model: nn.Module):
-    t = torch.linspace(T_START, T_END, N_SAMPLES, device=DEVICE).reshape(-1, 1)
+    t = torch.linspace(model.t_start, model.t_end, N_SAMPLES, device=DEVICE).reshape(-1, 1)
     t.requires_grad = True
     u = model(t).to(DEVICE)
     u_X = u[:,0].view(-1,1)

@@ -13,13 +13,13 @@ def preprocess_data(train_df: pd.DataFrame):
     return X, y
 
 class NN:
-    def __init__(self):
+    def __init__(self, input_dim: int = 16, output_dim: int = 3):
         self.model = nn.Sequential(
-            nn.Linear(16, 128),
+            nn.Linear(input_dim, 128),
             nn.Tanh(),
             nn.Linear(128, 128),
             nn.Tanh(),
-            nn.Linear(128, 3)
+            nn.Linear(128, output_dim)
         )
 
         self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.001)
