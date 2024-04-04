@@ -4,7 +4,7 @@ import torch.nn as nn
 import seaborn as sns
 
 T_START = 0
-T_END = 4.1
+T_END = 4.08333
 N_SAMPLES = 100 
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -14,17 +14,21 @@ torch.manual_seed(42)
 class PINN(nn.Module):
     def __init__(self, input_dim, output_dim):
         super(PINN, self).__init__()
-        self.input = nn.Linear(input_dim, 128)
-        self.hidden = nn.Linear(128, 128)
+        self.input = nn.Linear(input_dim, 32)
+        # nn.init.normal_(self.input.weight)
+        self.hidden = nn.Linear(32, 128)
+        # nn.init.normal_(self.hidden.weight)
         self.output = nn.Linear(128, output_dim)
+        # nn.init.normal_(self.output.weight)
         
         self.mu_max = nn.Parameter(torch.tensor([0.5]))
         self.Km = nn.Parameter(torch.tensor([0.5]))
         self.Y_XS = nn.Parameter(torch.tensor([0.5]))
     
     def forward(self, x):
-        x = torch.tanh(self.input(x))
-        x = torch.tanh(self.hidden(x))
+        x = torch.tanh(self.input(x)) 
+        x = torch.tanh(self.hidden(x)) # Hidden layer
+        # x = torch.tanh(self.hidden(x)) # Hidden layer
         x = self.output(x)
         return x    
     
