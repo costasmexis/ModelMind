@@ -7,12 +7,12 @@ from tqdm import tqdm
 
 from scipy.integrate import odeint, solve_ivp
 
-PATH_TO_DATA = '../data_ceasar.xlsx'
+PATH_TO_DATA = 'data_ceasar.csv'
 N_SAMPLES = 100 
 
 class Dataset:
     def __init__(self):
-        self.df = pd.read_excel(PATH_TO_DATA)
+        self.df = pd.read_csv(PATH_TO_DATA)
         self.t_start = self.df['Time'].iloc[0]
         self.t_end = self.df['Time'].iloc[-1]
         self.n_samples = N_SAMPLES
@@ -20,7 +20,7 @@ class Dataset:
         self.y0 = [self.df['Biomass'].iloc[0], self.df['Glucose'].iloc[0]] # (X, S)
         
     def get_data(self, exp: int = 1):
-        self.df = self.df[self.df['exp'] == exp]
+        self.df = self.df[self.df['BR'] == exp]
         self.y0 = [self.df['Biomass'].iloc[0], self.df['Glucose'].iloc[0]] # (X, S)
         self.t_start = self.df['Time'].iloc[0]
         self.t_end = self.df['Time'].iloc[-1]
