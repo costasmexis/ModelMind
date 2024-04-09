@@ -46,3 +46,26 @@ def get_loss(model: nn.Module):
     e_1 = torch.mean(error_1**2)
     e_2 = torch.mean(error_2**2)
     return e_1 + e_2    
+
+
+def train(model: nn.Module, EPOCHS: int, ts_train: torch.Tensor, us_train: torch.Tensor, criterion: nn.Module, optimizer: torch.optim.Optimizer):
+    LOSS = []
+    for epoch in range(EPOCHS):
+        u_pred = model(ts_train)
+        residual_pred = get_loss(model)
+        loss = criterion(u_pred, us_train)
+        loss += 0.5*residual_pred
+        LOSS.append(loss.item())
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        if epoch % 500 == 0:
+            print(f'Epoch: {epoch}, Loss: {loss.item()}, ODE Loss: {torch.mean(residual_pred).item()}')
+            print(f'mu_max: {model.mu_max.item()}, Km: {model.Km.item()}, Y_XS: {model.Y_XS.item()}')
+        
+        if model.Y_XS.item() > 1.0:
+            nn.init.uniform_(model.Y_XS)
+        if model.K.item() < 0.0:
+            nn.init.uniform_(model.K)
+
+    return LOSS
