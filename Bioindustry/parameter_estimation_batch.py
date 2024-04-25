@@ -51,7 +51,7 @@ for exp_id in ["BR01", "BR02", "BR03", "BR04", "BR05", "BR06", "BR07", "BR08", "
                 f"mu_max: {pinn.mu_max.item()}, Km: {pinn.Km.item()}, Y_XS: {pinn.Y_XS.item()}"
             )
 
-        # Check if Y_XS > 0.3 and reset it to 0.2
+        # Check if Y_XS > 1 and reset it 
         if pinn.Y_XS.item() > 1.0:
             pinn.Y_XS.data = torch.tensor([0.5], device=device, dtype=torch.float32)
             

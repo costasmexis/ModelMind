@@ -16,7 +16,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 PATH = "./data/"
 N_SAMPLES = 100
-EPOCHS = 100
+EPOCHS = 30000
 
 
 df = concat_data()
@@ -33,7 +33,7 @@ us_train = torch.tensor(
 def main():
     # Define the model
     pinn = PINN(1, 2, T_START=t_train.min(), T_END=t_train.max()).to(device)
-    optimizer = torch.optim.RMSprop(pinn.parameters(), lr=0.0005)
+    optimizer = torch.optim.Adam(pinn.parameters(), lr=0.0001)
     criterion = nn.MSELoss()
 
     # Train the model
@@ -48,13 +48,21 @@ def main():
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        if epoch % 100 == 0:
+        if epoch % 500 == 0:
             print(
                 f"Epoch: {epoch} | Loss: {loss.item()}, ODE Loss: {torch.mean(residual_pred).item()}"
             )
             print(
                 f"mu_max: {pinn.mu_max.item()}, Km: {pinn.Km.item()}, Y_XS: {pinn.Y_XS.item()}"
             )
+
+        # Check if Y_XS > 1 and reset it 
+        if pinn.Y_XS.item() > 1.0:
+            pinn.Y_XS.data = torch.tensor([0.8], device=device, dtype=torch.float32)
+        if pinn.Km.item() < 0.0:
+            pinn.Km.data = torch.tensor([0.3], device=device, dtype=torch.float32)
+        if pinn.mu_max.item() > 1.0:
+            pinn.mu_max.data = torch.tensor([0.8], device=device, dtype=torch.float32)
 
 
     u_pred = pinn(ts_train)
