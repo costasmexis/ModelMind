@@ -24,7 +24,7 @@ class PINN(nn.Module):
 
         self.mu_max = nn.Parameter(torch.tensor([0.5]))
         self.Km = nn.Parameter(torch.tensor([0.5]))
-        self.Y_XS = nn.Parameter(torch.tensor([0.5]))
+        self.Y_XS = nn.Parameter(torch.tensor([0.2]))
 
         self.t_start = T_START
         self.t_end = T_END
@@ -58,8 +58,8 @@ def get_loss(model: nn.Module):
 
 def get_loss_sparse(model: nn.Module):
     t_0 = model.t_start
-    t_1 = 1.0
-    step = .5
+    t_1 = 2.0
+    step = 0.3
     E_1 = 0
     E_2 = 0
     

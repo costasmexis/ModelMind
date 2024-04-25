@@ -8,17 +8,17 @@ import torch.nn as nn
 from scipy.integrate import odeint, solve_ivp
 from utils import get_data, get_training_data, solve_ode, plot_solution
 
-from PINN import PINN, get_loss
+from PINN import PINN, get_loss, get_loss_sparse
 
 torch.manual_seed(42)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 PATH = "./data/"
-N_SAMPLES = 100
+N_SAMPLES = 100 # If changes, update it in utils.py
 EPOCHS = 20000
 
-# for exp_id in ["BR01", "BR02", "BR03", "BR04", "BR05", "BR06", "BR07", "BR08", "BR09"]:
-for exp_id in ["BR01"]:
+for exp_id in ["BR01", "BR02", "BR03", "BR04", "BR05", "BR06", "BR07", "BR08", "BR09"]:
+# for exp_id in ["BR01"]:
     df = get_data(exp_id=exp_id, batch=True)
     t_train, u_train = get_training_data(df)
 
@@ -36,19 +36,24 @@ for exp_id in ["BR01"]:
     for epoch in range(EPOCHS):
         u_pred = pinn(ts_train)
         residual_pred = get_loss(pinn)
+        # residual_pred = get_loss_sparse(pinn)
         loss = criterion(u_pred, us_train)
         loss += residual_pred
         LOSS.append(loss.item())
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        if epoch % 500 == 0:
+        if epoch % 10 == 0:
             print(
                 f"Epoch: {epoch} | Loss: {loss.item()}, ODE Loss: {torch.mean(residual_pred).item()}"
             )
             print(
                 f"mu_max: {pinn.mu_max.item()}, Km: {pinn.Km.item()}, Y_XS: {pinn.Y_XS.item()}"
             )
+
+        # Check if Y_XS > 0.3 and reset it to 0.2
+        if pinn.Y_XS.item() > 1.0:
+            pinn.Y_XS.data = torch.tensor([0.5], device=device, dtype=torch.float32)
             
     # Calculate the MAE and RMSE
     u_pred = pinn(ts_train)

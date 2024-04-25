@@ -51,8 +51,10 @@ def get_data(exp_id: str, batch: bool = True) -> pd.DataFrame:
         df = df[df["Batch"] == 0]
     return df
 
+def concat_data():
+    return pd.concat([get_data(exp_id=exp_id, batch=True) for exp_id in ["BR01", "BR02", "BR03", "BR04", "BR05", "BR06", "BR07", "BR08", "BR09"]], ignore_index=True)
+
 def get_training_data(df: pd.DataFrame) -> pd.DataFrame:
     t_train = df["Time"].values
     u_train = df[["Biomass", "Glucose"]].values
     return np.float32(t_train), np.float32(u_train)
-
