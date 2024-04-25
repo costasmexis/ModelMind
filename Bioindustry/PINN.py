@@ -12,9 +12,9 @@ N_SAMPLES = 100
 class PINN(nn.Module):
     def __init__(self, input_dim, output_dim, T_START=0, T_END=10):
         super(PINN, self).__init__()
-        self.input = nn.Linear(input_dim, 32)
-        self.hidden = nn.Linear(32, 128)
-        self.output = nn.Linear(128, output_dim)
+        self.input = nn.Linear(input_dim, 50)
+        self.hidden = nn.Linear(50, 50)
+        self.output = nn.Linear(50, output_dim)
 
         # Initialize Linear layers
         for m in self.modules():
