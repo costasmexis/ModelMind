@@ -55,3 +55,33 @@ def get_loss(model: nn.Module):
     e_1 = torch.mean(error_1**2)
     e_2 = torch.mean(error_2**2)
     return e_1 + e_2
+
+def get_loss_sparse(model: nn.Module):
+    t_0 = model.t_start
+    t_1 = 1.0
+    step = .5
+    E_1 = 0
+    E_2 = 0
+    
+    n_iter = 4
+    for i in range(n_iter):
+        t = torch.linspace(t_0, t_1, N_SAMPLES, device=DEVICE).reshape(-1, 1)
+        t.requires_grad = True
+        u = model(t).to(DEVICE)
+        u_X = u[:, 0].view(-1, 1)
+        u_S = u[:, 1].view(-1, 1)
+        u_t_X = torch.autograd.grad(
+            u_X, t, grad_outputs=torch.ones_like(u_X), create_graph=True
+        )[0]
+        u_t_S = torch.autograd.grad(
+            u_S, t, grad_outputs=torch.ones_like(u_S), create_graph=True
+        )[0]
+        error_1 = u_t_X - model.mu_max * u_X * u_S / (u_S + model.Km)
+        error_2 = u_t_S + 1 / model.Y_XS * model.mu_max * u_X * u_S / (u_S + model.Km)
+        E_1 += torch.mean(error_1**2)
+        E_2 += torch.mean(error_2**2)
+        t_0 += step
+        t_1 += step
+        if t_1 > model.t_end:
+            t_1 = model.t_end
+    return E_1 + E_2

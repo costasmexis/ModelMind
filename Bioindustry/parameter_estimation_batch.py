@@ -42,7 +42,7 @@ for exp_id in ["BR01"]:
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        if epoch % 100 == 0:
+        if epoch % 500 == 0:
             print(
                 f"Epoch: {epoch} | Loss: {loss.item()}, ODE Loss: {torch.mean(residual_pred).item()}"
             )
