@@ -16,19 +16,15 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 PATH = "./data/"
 N_SAMPLES = 100
-EPOCHS = 30000
+EPOCHS = 10000
 
-
+# Read data
 df = concat_data()
 t_train, u_train = get_training_data(df)
 
 # Train data to tensor
-ts_train = torch.tensor(
-    t_train, requires_grad=True, device=device, dtype=torch.float32
-).view(-1, 1)
-us_train = torch.tensor(
-    u_train, requires_grad=True, device=device, dtype=torch.float32
-)
+ts_train = torch.tensor(t_train, requires_grad=True, device=device, dtype=torch.float32).view(-1, 1)
+us_train = torch.tensor(u_train, requires_grad=True, device=device, dtype=torch.float32)
 
 def main():
     # Define the model
@@ -60,7 +56,7 @@ def main():
         if pinn.Y_XS.item() > 1.0:
             pinn.Y_XS.data = torch.tensor([0.8], device=device, dtype=torch.float32)
         if pinn.Km.item() < 0.0:
-            pinn.Km.data = torch.tensor([0.3], device=device, dtype=torch.float32)
+            pinn.Km.data = torch.tensor([0.2], device=device, dtype=torch.float32)
         if pinn.mu_max.item() > 1.0:
             pinn.mu_max.data = torch.tensor([0.8], device=device, dtype=torch.float32)
 
@@ -75,6 +71,14 @@ def main():
         f"MAE Biomass: {mae_biomass:.2f}, MAE Glucose: {mae_glucose:.2f}\n"
         f"RMSE Biomass: {rmse_biomass:.2f}, RMSE Glucose: {rmse_glucose:.2f}"
     )
+
+    print(
+        f"mu_max: {pinn.mu_max.item()}, Km: {pinn.Km.item()}, Y_XS: {pinn.Y_XS.item()}"
+    )
+
+    # Save the model
+    torch.save(pinn.state_dict(), "./models/pinn_sparse.pth")
+
 
 
 if __name__ == "__main__":

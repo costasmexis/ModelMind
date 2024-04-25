@@ -18,7 +18,6 @@ N_SAMPLES = 100 # If changes, update it in utils.py
 EPOCHS = 20000
 
 for exp_id in ["BR01", "BR02", "BR03", "BR04", "BR05", "BR06", "BR07", "BR08", "BR09"]:
-# for exp_id in ["BR01"]:
     df = get_data(exp_id=exp_id, batch=True)
     t_train, u_train = get_training_data(df)
 

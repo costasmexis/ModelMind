@@ -1,7 +1,5 @@
-import numpy as np
 import torch
 import torch.nn as nn
-import seaborn as sns
 
 torch.manual_seed(42)
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -31,6 +29,7 @@ class PINN(nn.Module):
 
     def forward(self, x):
         x = torch.tanh(self.input(x))
+        x = torch.tanh(self.hidden(x))  # Hidden layer
         x = torch.tanh(self.hidden(x))  # Hidden layer
         x = self.output(x)
         return x
