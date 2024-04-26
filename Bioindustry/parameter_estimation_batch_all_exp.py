@@ -1,25 +1,22 @@
-import os
-
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-from scipy.integrate import odeint, solve_ivp
+from sklearn.preprocessing import MinMaxScaler
+from utils import concat_data, get_training_data
 
 from PINN import PINN, get_loss, get_loss_sparse
-
-from utils import concat_data, get_training_data
 
 torch.manual_seed(42)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 PATH = "./data/"
 N_SAMPLES = 100
-EPOCHS = 10000
+EPOCHS = 50000
 
-# Read data
+# ******************** #
 df = concat_data()
+
 t_train, u_train = get_training_data(df)
 
 # Train data to tensor
@@ -28,8 +25,8 @@ us_train = torch.tensor(u_train, requires_grad=True, device=device, dtype=torch.
 
 def main():
     # Define the model
-    pinn = PINN(1, 2, T_START=t_train.min(), T_END=t_train.max()).to(device)
-    optimizer = torch.optim.Adam(pinn.parameters(), lr=0.0001)
+    pinn = PINN(1, 2, t_start=t_train.min(), t_end=t_train.max()).to(device)
+    optimizer = torch.optim.RMSprop(pinn.parameters(), lr=0.0005)
     criterion = nn.MSELoss()
 
     # Train the model
@@ -40,6 +37,7 @@ def main():
         residual_pred = get_loss_sparse(pinn)
         loss = criterion(u_pred, us_train)
         loss += residual_pred
+
         LOSS.append(loss.item())
         optimizer.zero_grad()
         loss.backward()
@@ -51,15 +49,20 @@ def main():
             print(
                 f"mu_max: {pinn.mu_max.item()}, Km: {pinn.Km.item()}, Y_XS: {pinn.Y_XS.item()}"
             )
-
+        
         # Check if Y_XS > 1 and reset it 
         if pinn.Y_XS.item() > 1.0:
             pinn.Y_XS.data = torch.tensor([0.8], device=device, dtype=torch.float32)
         if pinn.Km.item() < 0.0:
             pinn.Km.data = torch.tensor([0.2], device=device, dtype=torch.float32)
-        if pinn.mu_max.item() > 1.0:
-            pinn.mu_max.data = torch.tensor([0.8], device=device, dtype=torch.float32)
 
+    # Plot the loss
+    plt.plot(LOSS)
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.yscale("log")
+    plt.title("Loss vs Epochs")
+    plt.savefig('./plots/loss_sparse.png')
 
     u_pred = pinn(ts_train)
     mae_biomass = torch.mean(torch.abs(u_pred[:, 0] - us_train[:, 0])).item()
@@ -78,7 +81,6 @@ def main():
 
     # Save the model
     torch.save(pinn.state_dict(), "./models/pinn_sparse.pth")
-
 
 
 if __name__ == "__main__":
