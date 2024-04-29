@@ -47,6 +47,7 @@ def get_data(exp_id: str, batch: bool = True) -> pd.DataFrame:
     xls = pd.ExcelFile(PATH + f"{exp_id}_for_model.xlsx")
     df = xls.parse(0)
     df.drop(0, inplace=True)
+    df['exp_id'] = exp_id
     if batch:
         df = df[df["Batch"] == 0]
     return df
