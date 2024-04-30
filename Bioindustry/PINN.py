@@ -19,15 +19,16 @@ class PINN(nn.Module):
                 nn.init.xavier_normal_(m.weight)
                 nn.init.zeros_(m.bias)
 
-        self.mu_max = nn.Parameter(torch.tensor([0.5]))
-        self.Km = nn.Parameter(torch.tensor([0.5]))
-        self.Y_XS = nn.Parameter(torch.tensor([0.5]))
+        self.mu_max = nn.Parameter(torch.rand([1]))
+        self.Km = nn.Parameter(torch.rand([1]))
+        self.Y_XS = nn.Parameter(torch.rand([1]))
 
         self.t_start = t_start
         self.t_end = t_end
 
     def forward(self, x):
         x = torch.tanh(self.input(x))
+        x = torch.tanh(self.hidden(x))  # Hidden layer
         x = torch.tanh(self.hidden(x))  # Hidden layer
         x = self.output(x)
         return x

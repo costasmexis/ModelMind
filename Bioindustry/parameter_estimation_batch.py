@@ -15,7 +15,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 PATH = "./data/"
 N_SAMPLES = 100 # If changes, update it in utils.py
-EPOCHS = 20000
+EPOCHS = 50000
 
 for exp_id in ["BR01", "BR02", "BR03", "BR04", "BR05", "BR06", "BR07", "BR08", "BR09"]:
     df = get_data(exp_id=exp_id, batch=True)
@@ -26,25 +26,26 @@ for exp_id in ["BR01", "BR02", "BR03", "BR04", "BR05", "BR06", "BR07", "BR08", "
     us_train = torch.tensor(u_train, requires_grad=True, device=device, dtype=torch.float32)
 
     # Define the model
-    pinn = PINN(1, 2, T_START=t_train.min(), T_END=t_train.max()).to(device)
+    pinn = PINN(1, 2, t_start=t_train.min(), t_end=t_train.max()).to(device)
     optimizer = torch.optim.RMSprop(pinn.parameters(), lr=0.0005)
     criterion = nn.MSELoss()
 
     # Train the model
     LOSS = []
+    weight = 0.20
     for epoch in range(EPOCHS):
+        optimizer.zero_grad()
         u_pred = pinn(ts_train)
         residual_pred = get_loss(pinn)
-        # residual_pred = get_loss_sparse(pinn)
-        loss = criterion(u_pred, us_train)
+        loss = weight * criterion(u_pred, us_train)
         loss += residual_pred
-        LOSS.append(loss.item())
-        optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-        if epoch % 10 == 0:
+        LOSS.append(loss.item())
+
+        if epoch % 500 == 0:
             print(
-                f"Epoch: {epoch} | Loss: {loss.item()}, ODE Loss: {torch.mean(residual_pred).item()}"
+                f"Epoch: {epoch} | Loss: {loss.item()}, DATA Loss: {weight*criterion(u_pred, us_train)}, ODE Loss: {torch.mean(residual_pred).item()}"
             )
             print(
                 f"mu_max: {pinn.mu_max.item()}, Km: {pinn.Km.item()}, Y_XS: {pinn.Y_XS.item()}"
