@@ -32,9 +32,9 @@ def plot_solution(
     ax.set_xlabel("Time")
     ax.set_ylabel("Concentration")
     ax.set_title(
-        f"mu_max: {mu_max:.2f}, Km: {Km:.2f}, Y_XS: {Y_XS:.2f}\n"
-        f"MAE Biomass: {mae_biomass:.2f}, MAE Glucose: {mae_glucose:.2f}\n"
-        f"RMSE Biomass: {rmse_biomass:.2f}, RMSE Glucose: {rmse_glucose:.2f}",
+        f"mu_max: {mu_max:.4f}, Km: {Km:.4f}, Y_XS: {Y_XS:.4f}\n"
+        f"MAE Biomass: {mae_biomass:.4f}, MAE Glucose: {mae_glucose:.4f}\n"
+        f"RMSE Biomass: {rmse_biomass:.4f}, RMSE Glucose: {rmse_glucose:.4f}",
         fontsize=8
     )
     ax.legend()

@@ -13,6 +13,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 PATH = "./data/"
 N_SAMPLES = 100
 EPOCHS = 100000
+weight = 1.0
 
 # ******************** #
 df = concat_data()
@@ -31,7 +32,6 @@ def main():
     
     # Train the model
     LOSS = []
-    weight = 1.0
     for epoch in range(EPOCHS):
         
         optimizer.zero_grad()
@@ -47,17 +47,25 @@ def main():
         
         if epoch % 500 == 0:
             print(
-                f"Epoch: {epoch} | Loss: {loss.item()}, DATA Loss: {weight*criterion(u_pred, us_train)}, ODE Loss: {torch.mean(residual_pred).item()}"
+            f"Epoch: {epoch} | Loss: {loss.item():.4f}, DATA Loss: {weight*criterion(u_pred, us_train):.4f}, ODE Loss: {torch.mean(residual_pred).item():.4f}"
             )
             print(
-                f"mu_max: {pinn.mu_max.item()}, Km: {pinn.Km.item()}, Y_XS: {pinn.Y_XS.item()}"
+            f"mu_max: {pinn.mu_max.item():.4f}, Km: {pinn.Km.item():.4f}, Y_XS: {pinn.Y_XS.item():.4f}"
             )
-        
+
         # Check if Y_XS > 1 and reset it 
         if pinn.Y_XS.item() > 1.0:
             pinn.Y_XS.data = torch.tensor([0.8], device=device, dtype=torch.float32)
         if pinn.Km.item() < 0.0:
             pinn.Km.data = torch.tensor([0.2], device=device, dtype=torch.float32)
+
+        if len(LOSS) > 5000:
+            if all(abs(loss_value - LOSS[-1]) < 0.10 * LOSS[-1] for loss_value in LOSS[-100:]) and loss.item() < 1.0:
+                print(f"Early stopping at epoch {epoch}")
+                break
+            elif all([loss_value < 0.03 for loss_value in LOSS[-10:]]):
+                print(f"Early stopping at epoch {epoch}")
+                break
 
     # Plot the loss
     plt.plot(LOSS)
