@@ -54,13 +54,15 @@ def main():
             )
 
         # Check if Y_XS > 1 and reset it 
-        if pinn.Y_XS.item() > 1.0:
-            pinn.Y_XS.data = torch.tensor([0.8], device=device, dtype=torch.float32)
-        if pinn.Km.item() < 0.0:
-            pinn.Km.data = torch.tensor([0.2], device=device, dtype=torch.float32)
+        if pinn.Y_XS.item() > 0.65 or pinn.Y_XS.item() < 0.3771:
+            pinn.Y_XS.data = torch.tensor([0.4943], device=device, dtype=torch.float32)
+        if pinn.Km.item() < 0.0061 or pinn.Km.item() > 0.3756:
+            pinn.Km.data = torch.tensor([0.1915], device=device, dtype=torch.float32)
+        if pinn.mu_max.item() < 0.7109 or pinn.mu_max.item() > 1.0876:
+            pinn.mu_max.data = torch.tensor([0.8348], device=device, dtype=torch.float32)
 
         if len(LOSS) > 5000:
-            if all(abs(loss_value - LOSS[-1]) < 0.10 * LOSS[-1] for loss_value in LOSS[-100:]) and loss.item() < 1.0:
+            if all(abs(loss_value - LOSS[-1]) < 0.01 * LOSS[-1] for loss_value in LOSS[-100:]) and loss.item() < 2.0:
                 print(f"Early stopping at epoch {epoch}")
                 break
             elif all([loss_value < 0.03 for loss_value in LOSS[-10:]]):

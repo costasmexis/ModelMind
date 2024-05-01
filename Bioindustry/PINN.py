@@ -19,9 +19,14 @@ class PINN(nn.Module):
                 nn.init.xavier_normal_(m.weight)
                 nn.init.zeros_(m.bias)
 
-        self.mu_max = nn.Parameter(torch.tensor([0.5]))
-        self.Km = nn.Parameter(torch.tensor([0.5]))
-        self.Y_XS = nn.Parameter(torch.tensor([0.5]))
+        # self.mu_max = nn.Parameter(torch.tensor([0.5]))
+        # self.Km = nn.Parameter(torch.tensor([0.5]))
+        # self.Y_XS = nn.Parameter(torch.tensor([0.5]))
+
+        # For fine tuning using all experiments
+        self.mu_max = nn.Parameter(torch.tensor([0.8348]))
+        self.Km = nn.Parameter(torch.tensor([0.1915]))
+        self.Y_XS = nn.Parameter(torch.tensor([0.4943]))
 
         self.t_start = t_start
         self.t_end = t_end
