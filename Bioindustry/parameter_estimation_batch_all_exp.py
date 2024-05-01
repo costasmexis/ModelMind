@@ -65,7 +65,7 @@ def main():
             if all(abs(loss_value - LOSS[-1]) < 0.01 * LOSS[-1] for loss_value in LOSS[-100:]) and loss.item() < 2.0:
                 print(f"Early stopping at epoch {epoch}")
                 break
-            elif all([loss_value < 0.03 for loss_value in LOSS[-10:]]):
+            elif all([loss_value < 0.01 for loss_value in LOSS[-100:]]):
                 print(f"Early stopping at epoch {epoch}")
                 break
 
@@ -97,4 +97,3 @@ def main():
 if __name__ == "__main__":
     print(f'Using device: {device}')
     main()
-    # main_batch_training()
