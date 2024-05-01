@@ -11,6 +11,8 @@ class PINN(nn.Module):
         super(PINN, self).__init__()
         self.input = nn.Linear(input_dim, 32)
         self.hidden = nn.Linear(32, 32)
+        self.hidden2 = nn.Linear(32, 128)
+        self.hidden3 = nn.Linear(128, 32)
         self.output = nn.Linear(32, output_dim)
 
         # Initialize Linear layers
@@ -19,14 +21,9 @@ class PINN(nn.Module):
                 nn.init.xavier_normal_(m.weight)
                 nn.init.zeros_(m.bias)
 
-        # self.mu_max = nn.Parameter(torch.tensor([0.5]))
-        # self.Km = nn.Parameter(torch.tensor([0.5]))
-        # self.Y_XS = nn.Parameter(torch.tensor([0.5]))
-
-        # For fine tuning using all experiments
-        self.mu_max = nn.Parameter(torch.tensor([0.8348]))
-        self.Km = nn.Parameter(torch.tensor([0.1915]))
-        self.Y_XS = nn.Parameter(torch.tensor([0.4943]))
+        self.mu_max = nn.Parameter(torch.tensor([0.5]))
+        self.Km = nn.Parameter(torch.tensor([0.5]))
+        self.Y_XS = nn.Parameter(torch.tensor([0.5]))
 
         self.t_start = t_start
         self.t_end = t_end
@@ -34,6 +31,8 @@ class PINN(nn.Module):
     def forward(self, x):
         x = torch.tanh(self.input(x))
         x = torch.tanh(self.hidden(x))  # Hidden layer
+        x = torch.tanh(self.hidden2(x))  # Hidden layer
+        x = torch.tanh(self.hidden3(x))
         x = self.output(x)
         return x
 
@@ -63,7 +62,7 @@ def get_loss(model: nn.Module):
 def get_loss_sparse(model: nn.Module):
     t_0 = model.t_start
     t_1 = 2.0
-    step = 0.3
+    step = 0.2
     E_1 = 0
     E_2 = 0
     

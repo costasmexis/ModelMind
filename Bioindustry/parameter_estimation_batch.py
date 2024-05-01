@@ -42,8 +42,10 @@ for exp_id in ["BR01", "BR02", "BR03", "BR04", "BR05", "BR06", "BR07", "BR08", "
     for epoch in range(EPOCHS):
         optimizer.zero_grad()
         u_pred = pinn(ts_train)
-        residual_pred = get_loss(pinn)
-        # residual_pred = get_loss_sparse(pinn)
+        if len(df) > 5:
+            residual_pred = get_loss(pinn)
+        else:
+            residual_pred = get_loss_sparse(pinn)
         loss = weight * criterion(u_pred, us_train)
         loss += residual_pred
         loss.backward()
@@ -65,10 +67,10 @@ for exp_id in ["BR01", "BR02", "BR03", "BR04", "BR05", "BR06", "BR07", "BR08", "
             pinn.Km.data = torch.tensor([0.2], device=device, dtype=torch.float32)
         
         if len(LOSS) > 5000:
-            if all(abs(loss_value - LOSS[-1]) < 0.10 * LOSS[-1] for loss_value in LOSS[-100:]) and loss.item() < 1.0:
+            if all(abs(loss_value - LOSS[-1]) < 0.05 * LOSS[-1] for loss_value in LOSS[-100:]) and loss.item() < 1.0:
                 print(f"Early stopping at epoch {epoch}")
                 break
-            elif all([loss_value < 0.03 for loss_value in LOSS[-10:]]):
+            elif all([loss_value < 0.02 for loss_value in LOSS[-100:]]):
                 print(f"Early stopping at epoch {epoch}")
                 break
 
